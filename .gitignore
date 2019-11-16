@@ -1,0 +1,5 @@
+# python cache directory
+__pycache__/
+
+# python version file
+.python-version
