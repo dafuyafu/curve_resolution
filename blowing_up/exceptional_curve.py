@@ -28,10 +28,10 @@ class AffineOpen:
 			raise Exception("Invalid Error: Cannot glue argument affine open")
 
 	def __str__(self):
-		return "A(" + str(self.axis[0]) + ", " + str(self.axis[1]) + ")"
+		return "AA(" + str(self.axis[0]) + ", " + str(self.axis[1]) + ")"
 
 
-class ExceptionCurve:
+class ExceptionalCurve:
 	def __init__(self, af):
 		self.affine_open = af
 		self.is_empty = True
@@ -52,12 +52,13 @@ class ExceptionCurve:
 	def __str__(self):
 		if self.is_empty:
 			return "self is Empty."
-			
+
 		'''
+
 			Caution!
 			Following sentence "self.ideal[0][0] ~ " operates correctly only for curves, so it must be fixed to be suitable for arbitary hypersurface.
 
 		'''
-		_x = self.ideal[0][0].subs({symbols('x'): self.affine_open[0].axis[0], symbols('y'): self.affine_open[0].axis[1]})
-		_y = self.ideal[1][0].subs({symbols('x'): self.affine_open[1].axis[0], symbols('y'): self.affine_open[1].axis[1]})
-		return "ExceptionCurve({" + str(self.affine_open[0]) + ", " + str(_x) + "}, {" + str(self.affine_open[1]) + ", " + str(_y) + "})"
+		_x = self.ideal[0][0].subs({symbols('x'): self.affine_open[0].axis[0]})
+		_y = self.ideal[1][0].subs({symbols('y'): self.affine_open[1].axis[1]})
+		return "ExceptionalCurve({" + str(self.affine_open[0]) + ", " + str(_x) + "}, {" + str(self.affine_open[1]) + ", " + str(_y) + "})"

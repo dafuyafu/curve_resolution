@@ -1,6 +1,6 @@
 from sympy import *
 from . import indprt as pr
-from . import exception_curve as ex
+from . import exceptional_curve as ex
 
 def blowing_up(f):
 	x,y = symbols('x,y')
@@ -12,9 +12,9 @@ def blowing_up(f):
 		raise Exception("Invalid Value: the polynomial needs to have only one singular point at the origin.")
 	else:
 		# process blowing up of the polynomial
-		exception_set_list = []
-		exception_set_list.extend(_blowing_up(f))
-		for e in exception_set_list:
+		exceptional_set_list = []
+		exceptional_set_list.extend(_blowing_up(f))
+		for e in exceptional_set_list:
 			print(e)
 
 def _blowing_up(f, n=0, axis=[symbols('x'),symbols('y')]):
@@ -28,8 +28,8 @@ def _blowing_up(f, n=0, axis=[symbols('x'),symbols('y')]):
 	affine_open[1].glue(affine_open[1].axis[0], affine_open[0], affine_open[0].axis[1])
 
 	ex_ideal_list = []
-	exception_list = []
-	returned_exception_list = []
+	exceptional_list = []
+	returned_exceptional_list = []
 
 	# step 2: calculate the strict transforms on affine open subsets defined above
 	for t in range(2):
@@ -61,7 +61,7 @@ def _blowing_up(f, n=0, axis=[symbols('x'),symbols('y')]):
 			print(" : nonsingular")
 			pr.indprt("Exc: V(" + str(var[t]) + ")", n + 1, linebreak=False)
 
-			# verify transversality of strict transformation and exception curve
+			# verify transversality of strict transformation and exceptional curve
 			intersection = solve([_f, var[t]])
 			if intersection == []:
 				print(": no crossing")
@@ -74,7 +74,7 @@ def _blowing_up(f, n=0, axis=[symbols('x'),symbols('y')]):
 					print(": normal crossing")
 				else:
 					print(": not normal crossing")
-					exception_list.extend(_blowing_up(_f, n + 1, axis=[affine_open[t].axis[0], affine_open[t].axis[1]]))
+					exceptional_list.extend(_blowing_up(_f, n + 1, axis=[affine_open[t].axis[0], affine_open[t].axis[1]]))
 			elif type(intersection) is dict:
 				_g = _f
 				for c in var:
@@ -83,10 +83,10 @@ def _blowing_up(f, n=0, axis=[symbols('x'),symbols('y')]):
 					print(": normal crossing")
 				else:
 					print(": not normal crossing")
-					exception_list.extend(_blowing_up(_f, n + 1, axis=[affine_open[t].axis[0], affine_open[t].axis[1]]))
+					exceptional_list.extend(_blowing_up(_f, n + 1, axis=[affine_open[t].axis[0], affine_open[t].axis[1]]))
 			else:
 				print()
-				exception_list.extend(_blowing_up(_f, n + 1, axis=[affine_open[t].axis[0], affine_open[t].axis[1]]))
+				exceptional_list.extend(_blowing_up(_f, n + 1, axis=[affine_open[t].axis[0], affine_open[t].axis[1]]))
 		else:
 			# if singular
 			print(" : singular")
@@ -107,11 +107,11 @@ def _blowing_up(f, n=0, axis=[symbols('x'),symbols('y')]):
 				pr.indprt(poly_name + " = " + str(_f), n + 1)
 
 			print("")
-			exception_list.extend(_blowing_up(_f, n + 1, axis=[affine_open[t].axis[0], affine_open[t].axis[1]]))
+			exceptional_list.extend(_blowing_up(_f, n + 1, axis=[affine_open[t].axis[0], affine_open[t].axis[1]]))
 
-	# step3: sort ex_ideal_list and define exception sets and make them exception list
-	exception_curve = ex.ExceptionCurve(affine_open)
-	exception_curve.set_ideal(ex_ideal_list[0][1], ex_ideal_list[1][1])
-	exception_list.insert(0, exception_curve)
+	# step3: sort ex_ideal_list and define exceptional sets and make them exceptional list
+	exceptional_curve = ex.ExceptionalCurve(affine_open)
+	exceptional_curve.set_ideal(ex_ideal_list[0][1], ex_ideal_list[1][1])
+	exceptional_list.insert(0, exceptional_curve)
 	
-	return exception_list
+	return exceptional_list
