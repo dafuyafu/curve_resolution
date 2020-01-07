@@ -12,28 +12,45 @@ def blowing_up(f):
 		raise Exception("Invalid Value: the polynomial needs to have only one singular point at the origin.")
 	else:
 		# process blowing up of the polynomial
-		exceptional_set_list = []
-		exceptional_set_list.extend(_blowing_up(f))
-		for e in exceptional_set_list:
+		exceptional_curve_list = []
+		exceptional_curve_list.extend(_blowing_up(f))
+		for e in exceptional_curve_list:
 			print(e)
 
-def _blowing_up(f, n=0, axis=[symbols('x'),symbols('y')]):
+def _blowing_up(f, n=0, current_affine_open=ex.AffineOpen(symbols('x'),symbols('y'))):
 	var = [symbols('x'),symbols('y')]
 
-	# step 1: define affine open sets and glue them
-	affine_open =  [ex.AffineOpen(axis[0], axis[1] / axis[0]),
-					ex.AffineOpen(axis[0] / axis[1], axis[1])]
+	'''
+		# step 1: define affine open sets and glue them
+		If is the initial blowing up, i.e. the blowing up of AA(x,y) at the origin, we need two affine_opens which have one affine axis and the other axis is isomorphic to a projective line. For other cases we define affine_opens which have two projective axes.
 
-	affine_open[0].glue(affine_open[0].axis[1], affine_open[1], affine_open[1].axis[0])
-	affine_open[1].glue(affine_open[1].axis[0], affine_open[0], affine_open[0].axis[1])
+	'''
+	if current_affine_open.is_isomorphic_to(ex.AffineOpen(symbols('x'),symbols('y'))):
+		affine_open =  [ex.AffineOpen(var[0], var[1] / var[0]),
+						ex.AffineOpen(var[0] / var[1], var[1])]
+	else:
+		affine_open =  [ex.AffineOpen(current_affine_open.axis[0], current_affine_open.axis[1] / current_affine_open.axis[0]),
+						ex.AffineOpen(current_affine_open.axis[0] / current_affine_open.axis[1], current_affine_open.axis[1])]
 
-	ex_ideal_list = []
+	affine_open[0].glue(1, affine_open[1], 0)
+	affine_open[1].glue(0, affine_open[0], 1)
+
+	if current_affine_open.axis[0] == var[0]:
+		pass
+	else:
+		affine_open[0].glue(0, current_affine_open.glued[0][1], 1)
+
+	if current_affine_open.axis[1] == var[1]:
+		pass
+	else:
+		affine_open[1].glue(1, current_affine_open.glued[1][1], 0)
+
+	exceptional_curve = ex.ExceptionalCurve()
 	exceptional_list = []
-	returned_exceptional_list = []
 
 	# step 2: calculate the strict transforms on affine open subsets defined above
 	for t in range(2):
-		pr.indprt("on U_" + str(var[t]), n)
+		pr.indprt("on " + str(affine_open[t]) + ":", n)
 
 		# step 2-1: substitute local variables on each open set
 		poly_name = "f_" + str(var[t])
@@ -51,7 +68,7 @@ def _blowing_up(f, n=0, axis=[symbols('x'),symbols('y')]):
 				break
 
 		pr.indprt(poly_name + " = " + str(_f), n + 1, linebreak=False)
-		ex_ideal_list.append((affine_open[t], [var[t]]))
+		exceptional_curve.set(affine_open[t], [var[t]])
 
 		# step 2-2: decide whether the surface is singular or not with Jacobian criterion
 		sing = solve([_f, diff(_f, var[0]), diff(_f, var[1])])
@@ -74,7 +91,7 @@ def _blowing_up(f, n=0, axis=[symbols('x'),symbols('y')]):
 					print(": normal crossing")
 				else:
 					print(": not normal crossing")
-					exceptional_list.extend(_blowing_up(_f, n + 1, axis=[affine_open[t].axis[0], affine_open[t].axis[1]]))
+					exceptional_list.extend(_blowing_up(_f, n + 1, current_affine_open=affine_open[t]))
 			elif type(intersection) is dict:
 				_g = _f
 				for c in var:
@@ -83,14 +100,14 @@ def _blowing_up(f, n=0, axis=[symbols('x'),symbols('y')]):
 					print(": normal crossing")
 				else:
 					print(": not normal crossing")
-					exceptional_list.extend(_blowing_up(_f, n + 1, axis=[affine_open[t].axis[0], affine_open[t].axis[1]]))
+					exceptional_list.extend(_blowing_up(_f, n + 1, current_affine_open=affine_open[t]))
 			else:
 				print()
-				exceptional_list.extend(_blowing_up(_f, n + 1, axis=[affine_open[t].axis[0], affine_open[t].axis[1]]))
+				exceptional_list.extend(_blowing_up(_f, n + 1, current_affine_open=affine_open[t]))
 		else:
 			# if singular
 			print(" : singular")
-			pr.indprt("Exc: V(" + str(exc) + ")", n + 1)
+			pr.indprt("Exc: V(" + str(var[t]) + ")", n + 1)
 			pr.indprt("Sing V(" + poly_name + ") = " + str(sing), n + 1)
 
 			# for dim Sing = 0
@@ -107,11 +124,9 @@ def _blowing_up(f, n=0, axis=[symbols('x'),symbols('y')]):
 				pr.indprt(poly_name + " = " + str(_f), n + 1)
 
 			print("")
-			exceptional_list.extend(_blowing_up(_f, n + 1, axis=[affine_open[t].axis[0], affine_open[t].axis[1]]))
+			exceptional_list.extend(_blowing_up(_f, n + 1, current_affine_open=affine_open[t]))
 
-	# step3: sort ex_ideal_list and define exceptional sets and make them exceptional list
-	exceptional_curve = ex.ExceptionalCurve(affine_open)
-	exceptional_curve.set_ideal(ex_ideal_list[0][1], ex_ideal_list[1][1])
+	# step3: make an exceptional list
 	exceptional_list.insert(0, exceptional_curve)
 	
 	return exceptional_list
