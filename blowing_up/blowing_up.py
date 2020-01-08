@@ -25,7 +25,7 @@ def _blowing_up(f, n=0, current_affine_open=ex.AffineOpen(symbols('x'),symbols('
 		If is the initial blowing up, i.e. the blowing up of AA(x,y) at the origin, we need two affine_opens which have one affine axis and the other axis is isomorphic to a projective line. For other cases we define affine_opens which have two projective axes.
 
 	'''
-	if current_affine_open.is_isomorphic_to(ex.AffineOpen(symbols('x'),symbols('y'))):
+	if current_affine_open == ex.AffineOpen(var[0], var[1]):
 		affine_open =  [ex.AffineOpen(var[0], var[1] / var[0]),
 						ex.AffineOpen(var[0] / var[1], var[1])]
 	else:
@@ -38,12 +38,12 @@ def _blowing_up(f, n=0, current_affine_open=ex.AffineOpen(symbols('x'),symbols('
 	if current_affine_open.axis[0] == var[0]:
 		pass
 	else:
-		affine_open[0].glue(0, current_affine_open.glued[0][1], 1)
+		affine_open[0].glue(0, current_affine_open.glued[0]['affine'], 1)
 
 	if current_affine_open.axis[1] == var[1]:
 		pass
 	else:
-		affine_open[1].glue(1, current_affine_open.glued[1][1], 0)
+		affine_open[1].glue(1, current_affine_open.glued[1]['affine'], 0)
 
 	exceptional_curve = ex.ExceptionalCurve()
 	exceptional_list = []
@@ -68,7 +68,7 @@ def _blowing_up(f, n=0, current_affine_open=ex.AffineOpen(symbols('x'),symbols('
 				break
 
 		pr.indprt(poly_name + " = " + str(_f), n + 1, linebreak=False)
-		exceptional_curve.set(affine_open[t], [var[t]])
+		exceptional_curve.set(affine_open[t], var[t])
 
 		# step 2-2: decide whether the surface is singular or not with Jacobian criterion
 		sing = solve([_f, diff(_f, var[0]), diff(_f, var[1])])
@@ -82,7 +82,6 @@ def _blowing_up(f, n=0, current_affine_open=ex.AffineOpen(symbols('x'),symbols('
 			intersection = solve([_f, var[t]])
 			if intersection == []:
 				print(": no crossing")
-				continue
 			elif type(intersection) is list and len(intersection) == 1:
 				_g = _f
 				for c in var:
@@ -92,6 +91,9 @@ def _blowing_up(f, n=0, current_affine_open=ex.AffineOpen(symbols('x'),symbols('
 				else:
 					print(": not normal crossing")
 					exceptional_list.extend(_blowing_up(_f, n + 1, current_affine_open=affine_open[t]))
+					affine_open[t].detach(t)
+					affine_open[t].detach(1-t)
+					affine_open[1-t].detach(t)
 			elif type(intersection) is dict:
 				_g = _f
 				for c in var:
@@ -101,9 +103,15 @@ def _blowing_up(f, n=0, current_affine_open=ex.AffineOpen(symbols('x'),symbols('
 				else:
 					print(": not normal crossing")
 					exceptional_list.extend(_blowing_up(_f, n + 1, current_affine_open=affine_open[t]))
+					affine_open[t].detach(t)
+					affine_open[t].detach(1-t)
+					affine_open[1-t].detach(t)
 			else:
 				print()
 				exceptional_list.extend(_blowing_up(_f, n + 1, current_affine_open=affine_open[t]))
+				affine_open[t].detach(t)
+				affine_open[t].detach(1-t)
+				affine_open[1-t].detach(t)
 		else:
 			# if singular
 			print(" : singular")
@@ -125,6 +133,17 @@ def _blowing_up(f, n=0, current_affine_open=ex.AffineOpen(symbols('x'),symbols('
 
 			print("")
 			exceptional_list.extend(_blowing_up(_f, n + 1, current_affine_open=affine_open[t]))
+			affine_open[t].detach(t)
+			affine_open[t].detach(1-t)
+			affine_open[1-t].detach(t)
+
+	# 現在のリストの中のExcのAffineが自分と貼り合わさってたらもう一個付け足す．
+	for t in range(2):
+		for exc in exceptional_list:
+			for div in exc.divisors:
+				for value in div['open'].glued.values():
+					if affine_open[t] == value['affine']:
+						exceptional_curve.set(div['open'], var[1-t])
 
 	# step3: make an exceptional list
 	exceptional_list.insert(0, exceptional_curve)

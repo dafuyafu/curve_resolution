@@ -23,17 +23,26 @@ class AffineOpen:
 
 		'''
 			axis has labels of axes of affine open set as rational function.
-			glued is the list 
+			glued is the dictionary which has the data of glued affine open sets.
+
+			affine_open.axis = (u, v) # tuple
+			affine_open.glued = {0: {affine: AA(u, v), 'axis': 1}, 1: {'affine': AA(w, t), 'axis': 0}} # dictionary
 
 		'''
 		self.axis = (x,y)
-		self.glued = []
+		self.glued = {}
 
-	def glue(self, self_axis_index, aff, aff_axis_index):
-		if self.axis[self_axis_index] * aff.axis[aff_axis_index] == 1:
-			self.glued.append((self_axis_index, aff, aff_axis_index))
+	def glue(self, self_key, aff, aff_key):
+		if self.axis[self_key] * aff.axis[aff_key] == 1:
+			self.glued[self_key] = {'affine': aff, 'axis': aff_key}
 		else:
 			raise Exception("Invalid Error: Cannot glue argument affine open")
+
+	def detach(self, key):
+		if key in self.glued:
+			self.glued.pop(key)
+		else:
+			pass
 
 	def __eq__(self, aff):
 		if not isinstance(aff, AffineOpen):
@@ -42,7 +51,7 @@ class AffineOpen:
 			return True
 		elif self.axis[1] == aff.axis[0] and self.axis[0] == aff.axis[1]:
 			return True
-		else
+		else:
 			return False
 
 	def __str__(self):
@@ -54,24 +63,24 @@ class ExceptionalCurve:
 		self.divisors = []
 
 	def set(self, affine, ideal):
-		self.divisors.append((affine, ideal))
+		self.divisors.append({'open': affine, 'ideal': ideal})
 
 	def __str__(self):
 		_text = ""
 		for div in self.divisors:
-			_text += "{" + str(div[0]) + ", " + str(div[1][0]) + "}, "
+			_text += "{" + str(div['open']) + ", " + str(div['ideal']) + "}, "
 		return "ExceptionalCurve(" + _text[:-2] + ")"
 
 	@classmethod
 	def intersection(cls, exc1, exc2):
 		for d in exc1.divisors:
 			for e in exc2.divisors:
-				if d[0] == e[0]:
-					its = solve([d[1][0], e[1][0]])
-					if type(its) == list and len(its) > 0:
+				if d['open'] == e['open']:
+					_intersection = solve([d['ideal'], e['ideal']])
+					if type(_intersection) == list and len(_intersection) > 0:
 						return True
-					elif type(its) == dict:
+					elif type(_intersection) == dict:
 						return True
-					else
+					else:
 						pass
 		return False
