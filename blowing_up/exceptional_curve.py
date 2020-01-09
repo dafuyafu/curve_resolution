@@ -84,3 +84,10 @@ class ExceptionalCurve:
 					else:
 						pass
 		return False
+
+class NonsingularStrictTransform(ExceptionalCurve):
+	def __str__(self):
+		_text = ""
+		for div in self.divisors:
+			_text += "{" + str(div['open']) + ", " + str(div['ideal']) + "}, "
+		return "NonsingularStrictTransform(" + _text[:-2] + ")"

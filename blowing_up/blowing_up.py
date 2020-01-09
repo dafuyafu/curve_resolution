@@ -1,4 +1,6 @@
 from sympy import *
+import networkx as nx
+import matplotlib.pyplot as plt
 from . import indprt as pr
 from . import exceptional_curve as ex
 
@@ -16,6 +18,25 @@ def blowing_up(f):
 		exceptional_curve_list.extend(_blowing_up(f))
 		for e in exceptional_curve_list:
 			print(e)
+
+		graph = nx.Graph()
+		colors = []
+		for e in exceptional_curve_list:
+			graph.add_node(exceptional_curve_list.index(e))
+			if isinstance(e, ex.NonsingularStrictTransform):
+				colors.append("blue")
+			else:
+				colors.append("red")
+			for g in exceptional_curve_list:
+				if ex.ExceptionalCurve.intersection(e,g):
+					graph.add_edge(exceptional_curve_list.index(e),exceptional_curve_list.index(g))
+		
+		pos = nx.spring_layout(graph)
+		plt.figure(figsize=(6, 6))
+		nx.draw_networkx_nodes(graph, pos, node_color = colors)
+		nx.draw_networkx_edges(graph, pos)
+		plt.axis('off')
+		plt.show()
 
 def _blowing_up(f, n=0, current_affine_open=ex.AffineOpen(symbols('x'),symbols('y'))):
 	var = [symbols('x'),symbols('y')]
@@ -45,6 +66,7 @@ def _blowing_up(f, n=0, current_affine_open=ex.AffineOpen(symbols('x'),symbols('
 	else:
 		affine_open[1].glue(1, current_affine_open.glued[1]['affine'], 0)
 
+	nonsingular_strict_transform = ex.NonsingularStrictTransform()
 	exceptional_curve = ex.ExceptionalCurve()
 	exceptional_list = []
 
@@ -88,6 +110,7 @@ def _blowing_up(f, n=0, current_affine_open=ex.AffineOpen(symbols('x'),symbols('
 					_g = _g.subs({c: c + intersection[0][c]})
 				if _g * var[t] == var[0] * var[1] or _g * var[t] == - var[0] * var[1]:
 					print(": normal crossing")
+					nonsingular_strict_transform.set(affine_open[t], _f)
 				else:
 					print(": not normal crossing")
 					exceptional_list.extend(_blowing_up(_f, n + 1, current_affine_open=affine_open[t]))
@@ -100,6 +123,7 @@ def _blowing_up(f, n=0, current_affine_open=ex.AffineOpen(symbols('x'),symbols('
 					_g = _g.subs({c: c + intersection[c]})
 				if _g * var[t] == var[0] * var[1] or _g * var[t] == - var[0] * var[1]:
 					print(": normal crossing")
+					nonsingular_strict_transform.set(affine_open[t], _f)
 				else:
 					print(": not normal crossing")
 					exceptional_list.extend(_blowing_up(_f, n + 1, current_affine_open=affine_open[t]))
@@ -146,6 +170,10 @@ def _blowing_up(f, n=0, current_affine_open=ex.AffineOpen(symbols('x'),symbols('
 						exceptional_curve.set(div['open'], var[1-t])
 
 	# step3: make an exceptional list
+	if nonsingular_strict_transform.divisors == []:
+		pass
+	else:
+		exceptional_list.insert(0, nonsingular_strict_transform)
 	exceptional_list.insert(0, exceptional_curve)
 	
 	return exceptional_list
