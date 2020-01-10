@@ -42,7 +42,7 @@ class AffineOpen:
 		if key in self.glued:
 			self.glued.pop(key)
 		else:
-			pass
+			print('Not glued')
 
 	def __eq__(self, aff):
 		if not isinstance(aff, AffineOpen):
