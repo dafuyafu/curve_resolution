@@ -1,34 +1,26 @@
 '''
 
-	In this module, we define the geometric classes. 
+	In this module, we define the geometric classes, AffineOpen, ExceptionalCurve and NonsingularStrictTransform.
 
 '''
-
 
 from sympy import *
 
 class AffineOpen:
-	'''
-		class AffineOpen
-		axis: list of labels of x-axis and y-axis of the affine open which is isomorphic A2. The constructor arguments are monomial rational functions.
 
-		def glue(aff, t, s):
-			aff: an AffineOpen instance which is glued to self.
-			self_axis: an axis of self
-			aff_axis: an axis of aff
+	'''
+		class AffineOpen:
+		AffineOpen is the class which represents an affine open subset of A2.
+
+		axis: tuple of labels of x-axis and y-axis of the affine open which is isomorphic A2. The constructor arguments are monomial rational functions.
+		glued: dictionary 
+
+		affine_open.axis = (u, v) # tuple
+		affine_open.glued = {0: {affine: AA(u, v), 'axis': 1}, 1: {'affine': AA(w, t), 'axis': 0}} # dictionary
 
 	'''
 
 	def __init__(self, x, y):
-
-		'''
-			axis has labels of axes of affine open set as rational function.
-			glued is the dictionary which has the data of glued affine open sets.
-
-			affine_open.axis = (u, v) # tuple
-			affine_open.glued = {0: {affine: AA(u, v), 'axis': 1}, 1: {'affine': AA(w, t), 'axis': 0}} # dictionary
-
-		'''
 		self.axis = (x,y)
 		self.glued = {}
 
@@ -68,7 +60,7 @@ class ExceptionalCurve:
 	def __str__(self):
 		_text = ""
 		for div in self.divisors:
-			_text += "{" + str(div['open']) + ", " + str(div['ideal']) + "}, "
+			_text += "{" + str(div['ideal']) + ", " + str(div['open']) + "}, "
 		return "ExceptionalCurve(" + _text[:-2] + ")"
 
 	@classmethod
@@ -89,5 +81,5 @@ class NonsingularStrictTransform(ExceptionalCurve):
 	def __str__(self):
 		_text = ""
 		for div in self.divisors:
-			_text += "{" + str(div['open']) + ", " + str(div['ideal']) + "}, "
+			_text += "{" + str(div['ideal']) + ", " + str(div['open']) + "}, "
 		return "NonsingularStrictTransform(" + _text[:-2] + ")"

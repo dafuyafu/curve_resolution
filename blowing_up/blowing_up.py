@@ -9,9 +9,9 @@ def blowing_up(f):
 	sing = solve([f, diff(f, x), diff(f, y)])
 
 	# verify whether the polynomial meets the condition
-	if not sing[0] == {x: 0, y: 0}:
+	if (not sing[0] == {x: 0, y: 0}) or (len(sing) > 1):
 		# throw an exception
-		raise Exception("Invalid Value: the polynomial needs to have only one singular point at the origin.")
+		raise Exception("ValueError: the polynomial needs to have only one singular point at the origin.")
 	else:
 		# process blowing up of the polynomial
 		exceptional_curve_list = []
@@ -164,6 +164,8 @@ def _blowing_up(f, n=0, current_affine_open=ex.AffineOpen(symbols('x'),symbols('
 	# 現在のリストの中のExcのAffineが自分と貼り合わさってたらもう一個付け足す．
 	for t in range(2):
 		for exc in exceptional_list:
+			if isinstance(exc, ex.NonsingularStrictTransform):
+				continue
 			for div in exc.divisors:
 				for value in div['open'].glued.values():
 					if affine_open[t] == value['affine']:
