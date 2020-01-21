@@ -34,14 +34,12 @@ class AffineOpen:
 		if key in self.glued:
 			self.glued.pop(key)
 		else:
-			print('Not glued')
+			pass
 
 	def __eq__(self, aff):
 		if not isinstance(aff, AffineOpen):
 			return NotImplemented
-		if self.axis[0] == aff.axis[0] and self.axis[1] == aff.axis[1]:
-			return True
-		elif self.axis[1] == aff.axis[0] and self.axis[0] == aff.axis[1]:
+		if set(self.axis) == set(aff.axis):
 			return True
 		else:
 			return False

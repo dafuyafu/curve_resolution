@@ -46,11 +46,7 @@ def _blowing_up(f, n=0, current_affine_open=ex.AffineOpen(symbols('x'),symbols('
 		If is the initial blowing up, i.e. the blowing up of AA(x,y) at the origin, we need two affine_opens which have one affine axis and the other axis is isomorphic to a projective line. For other cases we define affine_opens which have two projective axes.
 
 	'''
-	if current_affine_open == ex.AffineOpen(var[0], var[1]):
-		affine_open =  [ex.AffineOpen(var[0], var[1] / var[0]),
-						ex.AffineOpen(var[0] / var[1], var[1])]
-	else:
-		affine_open =  [ex.AffineOpen(current_affine_open.axis[0], current_affine_open.axis[1] / current_affine_open.axis[0]),
+	affine_open =  [ex.AffineOpen(current_affine_open.axis[0], current_affine_open.axis[1] / current_affine_open.axis[0]),
 						ex.AffineOpen(current_affine_open.axis[0] / current_affine_open.axis[1], current_affine_open.axis[1])]
 
 	affine_open[0].glue(1, affine_open[1], 0)
